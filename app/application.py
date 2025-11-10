@@ -62,14 +62,14 @@ def create_app(config: AppConfig) -> FastAPI:
 
     # Инициализация репозитория для истории чата (PostgreSQL)
     chat_history_repository = None
-    if config.postgres_dsn:
+    if config.postgres_dsn and config.postgres_dsn.strip():
         try:
             chat_history_repository = ChatHistoryRepository(config.postgres_dsn)
-            logger.info("Chat history repository initialized with PostgreSQL")
+            logger.info(f"Chat history repository initialized with PostgreSQL DSN: {config.postgres_dsn[:50]}...")
         except Exception as e:
             logger.warning(f"Failed to initialize chat history repository: {e}. Will use file-based storage.")
     else:
-        logger.warning("POSTGRES_DSN not provided, chat history will be stored in files")
+        logger.warning("POSTGRES_DSN not provided or empty, chat history will be stored in files")
 
     # Инициализация ChatManager для обработки запросов от Telegram бота
     # Поддержка нескольких моделей с fallback: Cohere -> GPT -> Gemini

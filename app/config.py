@@ -30,10 +30,7 @@ def load_config() -> AppConfig:
         openai_api_key=os.getenv("OPENAI_API_KEY", ""),
         gemini_api_key=os.getenv("GEMINI_API_KEY", ""),
         cohere_api_key=os.getenv("COHERE_API_KEY", ""),
-        postgres_dsn=os.getenv(
-            "POSTGRES_DSN",
-            "postgresql://user:pass@localhost:5432/forte",
-        ),
+        postgres_dsn=os.getenv("POSTGRES_DSN", ""),
         gpt_model=os.getenv("GPT_MODEL", "gpt-4.1-mini"),
         gemini_model=os.getenv("GEMINI_MODEL", "models/gemini-2.5-flash"),
         cohere_model=os.getenv("COHERE_MODEL", "command-r-08-2024"),

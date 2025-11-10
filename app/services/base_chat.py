@@ -130,12 +130,15 @@ class BaseChat(ABC):
 
     def save_history(self):
         """Save history to database or file."""
+        print(f"🔍 save_history вызван: repository={self.history_repository is not None}, user_id={self.user_id}, role={self.role}, history_len={len(self.history)}")
+        
         if self.history_repository and self.user_id and self.role:
             # Use async method in sync context
             try:
                 # Try to get running loop
                 try:
                     loop = asyncio.get_running_loop()
+                    print(f"🔍 Event loop запущен, используем отдельный поток")
                     # If loop is running, we're in async context
                     # Create a task and wait for it using a different approach
                     # Use run_coroutine_threadsafe from a thread pool
@@ -165,19 +168,26 @@ class BaseChat(ABC):
                         raise result_container["error"]
                     if not result_container["done"]:
                         raise TimeoutError("Save history operation timed out")
+                    print(f"✅ save_history завершен успешно")
                 except RuntimeError:
+                    print(f"🔍 Event loop не запущен, используем asyncio.run()")
                     # No running loop, can use asyncio.run()
                     asyncio.run(self._save_history_async())
+                    print(f"✅ save_history завершен успешно (asyncio.run)")
             except Exception as e:
                 import traceback
                 error_msg = f"⚠️  Ошибка при сохранении истории в БД: {e}\n{traceback.format_exc()}"
                 print(error_msg)
         elif self.history_file:
+            print(f"💾 Сохранение в файл: {self.history_file}")
             self._save_history_file()
+        else:
+            print(f"⚠️  Не могу сохранить: нет repository или user_id/role")
 
     async def _save_history_async(self):
         """Save history to database."""
         if not (self.history_repository and self.user_id and self.role):
+            print(f"⚠️  Не могу сохранить: repository={self.history_repository is not None}, user_id={self.user_id}, role={self.role}")
             return
 
         try:
@@ -185,8 +195,13 @@ class BaseChat(ABC):
             # This is necessary when running in a separate thread with new event loop
             if self.history_repository._pool is None:
                 await self.history_repository.initialize()
+            
+            print(f"💾 Сохранение истории: user_id={self.user_id}, role={self.role}, messages={len(self.history)}")
+            
             # Clear existing history and save all messages (history is already trimmed)
             await self.history_repository.clear_history(self.user_id, self.role)
+            
+            saved_count = 0
             for msg in self.history:
                 await self.history_repository.add_message(
                     self.user_id,
@@ -194,6 +209,9 @@ class BaseChat(ABC):
                     msg.get("role", "user"),
                     msg.get("content", ""),
                 )
+                saved_count += 1
+            
+            print(f"✅ История сохранена: {saved_count} сообщений для user_id={self.user_id}, role={self.role}")
         except Exception as e:
             import traceback
             error_msg = f"⚠️  Ошибка при сохранении истории в БД (async): {e}\n{traceback.format_exc()}"
@@ -261,6 +279,7 @@ class BaseChat(ABC):
     async def _load_history_async(self) -> List[Dict[str, str]]:
         """Load history from database."""
         if not (self.history_repository and self.user_id and self.role):
+            print(f"⚠️  Не могу загрузить: repository={self.history_repository is not None}, user_id={self.user_id}, role={self.role}")
             return []
 
         try:
@@ -268,7 +287,10 @@ class BaseChat(ABC):
             # This is necessary when running in a separate thread with new event loop
             if self.history_repository._pool is None:
                 await self.history_repository.initialize()
+            
+            print(f"📖 Загрузка истории: user_id={self.user_id}, role={self.role}")
             history = await self.history_repository.get_history(self.user_id, self.role)
+            print(f"✅ История загружена: {len(history)} сообщений для user_id={self.user_id}, role={self.role}")
             return history
         except Exception as e:
             import traceback

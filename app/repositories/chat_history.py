@@ -116,6 +116,7 @@ class ChatHistoryRepository:
                 INSERT INTO chat_history (user_id, role, message_role, message_content)
                 VALUES ($1, $2, $3, $4)
             """, user_id, role, message_role, message_content)
+            logger.debug(f"Message added: user_id={user_id}, role={role}, message_role={message_role}, content_length={len(message_content)}")
 
     async def clear_history(self, user_id: int, role: Optional[str] = None) -> None:
         """
@@ -130,15 +131,17 @@ class ChatHistoryRepository:
 
         async with self._pool.acquire() as conn:
             if role:
-                await conn.execute("""
+                result = await conn.execute("""
                     DELETE FROM chat_history
                     WHERE user_id = $1 AND role = $2
                 """, user_id, role)
+                logger.info(f"Cleared history: user_id={user_id}, role={role}, result={result}")
             else:
-                await conn.execute("""
+                result = await conn.execute("""
                     DELETE FROM chat_history
                     WHERE user_id = $1
                 """, user_id)
+                logger.info(f"Cleared all history: user_id={user_id}, result={result}")
 
     async def get_message_count(self, user_id: int, role: str = "user") -> int:
         """Get total message count for a user and role."""
