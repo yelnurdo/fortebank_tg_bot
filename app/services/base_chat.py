@@ -136,18 +136,42 @@ class BaseChat(ABC):
                 # Try to get running loop
                 try:
                     loop = asyncio.get_running_loop()
-                    # If loop is running, schedule coroutine in the main loop
+                    # If loop is running, we're in async context
+                    # Create a task and wait for it using a different approach
+                    # Use run_coroutine_threadsafe from a thread pool
                     import concurrent.futures
-                    future = asyncio.run_coroutine_threadsafe(
-                        self._save_history_async(), loop
-                    )
-                    # Wait for completion with timeout
-                    future.result(timeout=5)
+                    import threading
+                    
+                    result_container = {"done": False, "error": None}
+                    
+                    def run_async():
+                        try:
+                            # Create new event loop in this thread
+                            new_loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(new_loop)
+                            try:
+                                new_loop.run_until_complete(self._save_history_async())
+                                result_container["done"] = True
+                            finally:
+                                new_loop.close()
+                        except Exception as e:
+                            result_container["error"] = e
+                    
+                    thread = threading.Thread(target=run_async, daemon=True)
+                    thread.start()
+                    thread.join(timeout=10)
+                    
+                    if result_container["error"]:
+                        raise result_container["error"]
+                    if not result_container["done"]:
+                        raise TimeoutError("Save history operation timed out")
                 except RuntimeError:
                     # No running loop, can use asyncio.run()
                     asyncio.run(self._save_history_async())
             except Exception as e:
-                print(f"⚠️  Ошибка при сохранении истории в БД: {e}")
+                import traceback
+                error_msg = f"⚠️  Ошибка при сохранении истории в БД: {e}\n{traceback.format_exc()}"
+                print(error_msg)
         elif self.history_file:
             self._save_history_file()
 
@@ -157,6 +181,8 @@ class BaseChat(ABC):
             return
 
         try:
+            # Ensure repository is initialized
+            await self.history_repository.initialize()
             # Clear existing history and save all messages (history is already trimmed)
             await self.history_repository.clear_history(self.user_id, self.role)
             for msg in self.history:
@@ -167,7 +193,9 @@ class BaseChat(ABC):
                     msg.get("content", ""),
                 )
         except Exception as e:
-            print(f"⚠️  Ошибка при сохранении истории в БД: {e}")
+            import traceback
+            error_msg = f"⚠️  Ошибка при сохранении истории в БД (async): {e}\n{traceback.format_exc()}"
+            print(error_msg)
 
     def _save_history_file(self):
         """Save history to file in unified format."""
@@ -190,17 +218,40 @@ class BaseChat(ABC):
                 # Try to get running loop
                 try:
                     loop = asyncio.get_running_loop()
-                    # If loop is running, schedule coroutine in the main loop
-                    future = asyncio.run_coroutine_threadsafe(
-                        self._load_history_async(), loop
-                    )
-                    # Wait for completion with timeout
-                    self.history = future.result(timeout=5)
+                    # If loop is running, we're in async context
+                    # Create a task and wait for it using a different approach
+                    import threading
+                    
+                    result_container = {"result": [], "error": None}
+                    
+                    def run_async():
+                        try:
+                            # Create new event loop in this thread
+                            new_loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(new_loop)
+                            try:
+                                result_container["result"] = new_loop.run_until_complete(
+                                    self._load_history_async()
+                                )
+                            finally:
+                                new_loop.close()
+                        except Exception as e:
+                            result_container["error"] = e
+                    
+                    thread = threading.Thread(target=run_async, daemon=True)
+                    thread.start()
+                    thread.join(timeout=10)
+                    
+                    if result_container["error"]:
+                        raise result_container["error"]
+                    self.history = result_container["result"]
                 except RuntimeError:
                     # No running loop, can use asyncio.run()
                     self.history = asyncio.run(self._load_history_async())
             except Exception as e:
-                print(f"⚠️  Ошибка при загрузке истории из БД: {e}")
+                import traceback
+                error_msg = f"⚠️  Ошибка при загрузке истории из БД: {e}\n{traceback.format_exc()}"
+                print(error_msg)
                 self.history = []
         elif self.history_file:
             self._load_history_file()
@@ -212,9 +263,12 @@ class BaseChat(ABC):
 
         try:
             await self.history_repository.initialize()
-            return await self.history_repository.get_history(self.user_id, self.role)
+            history = await self.history_repository.get_history(self.user_id, self.role)
+            return history
         except Exception as e:
-            print(f"⚠️  Ошибка при загрузке истории из БД: {e}")
+            import traceback
+            error_msg = f"⚠️  Ошибка при загрузке истории из БД (async): {e}\n{traceback.format_exc()}"
+            print(error_msg)
             return []
 
     def _load_history_file(self):
