@@ -44,8 +44,8 @@ class ChatManager:
         # Структура: {user_id: role}
         self.user_roles: Dict[int, str] = {}
 
-        # Порядок fallback: Gemini -> GPT -> Cohere
-        self.fallback_order = ["gemini", "gpt", "cohere"]
+        # Порядок fallback: Cohere -> GPT -> Gemini
+        self.fallback_order = ["cohere", "gpt", "gemini"]
 
     def _create_chat_instance(
         self, model_type: str, user_id: int, role: str, history_file: str
