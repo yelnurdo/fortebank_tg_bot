@@ -17,17 +17,39 @@ class ChatHistoryRepository:
     def __init__(self, dsn: str):
         self._dsn = dsn
         self._pool: Optional[asyncpg.Pool] = None
+        self._pools_by_loop = {}  # Store pools by event loop ID
 
     async def initialize(self) -> None:
         """Initialize database connection pool and create tables if needed."""
-        if self._pool is None:
+        import asyncio
+        try:
+            loop = asyncio.get_running_loop()
+            loop_id = id(loop)
+            
+            # Check if we already have a pool for this loop
+            if loop_id in self._pools_by_loop:
+                self._pool = self._pools_by_loop[loop_id]
+                return
+            
+            # Create new pool for this loop
             self._pool = await asyncpg.create_pool(
                 self._dsn,
                 min_size=1,
                 max_size=10,
                 command_timeout=60,
             )
+            self._pools_by_loop[loop_id] = self._pool
             await self._create_tables()
+        except RuntimeError:
+            # No running loop, create pool anyway
+            if self._pool is None:
+                self._pool = await asyncpg.create_pool(
+                    self._dsn,
+                    min_size=1,
+                    max_size=10,
+                    command_timeout=60,
+                )
+                await self._create_tables()
 
     async def close(self) -> None:
         """Close database connection pool."""

@@ -181,8 +181,10 @@ class BaseChat(ABC):
             return
 
         try:
-            # Ensure repository is initialized
-            await self.history_repository.initialize()
+            # Create a new connection pool for this event loop if needed
+            # This is necessary when running in a separate thread with new event loop
+            if self.history_repository._pool is None:
+                await self.history_repository.initialize()
             # Clear existing history and save all messages (history is already trimmed)
             await self.history_repository.clear_history(self.user_id, self.role)
             for msg in self.history:
@@ -262,7 +264,10 @@ class BaseChat(ABC):
             return []
 
         try:
-            await self.history_repository.initialize()
+            # Create a new connection pool for this event loop if needed
+            # This is necessary when running in a separate thread with new event loop
+            if self.history_repository._pool is None:
+                await self.history_repository.initialize()
             history = await self.history_repository.get_history(self.user_id, self.role)
             return history
         except Exception as e:
