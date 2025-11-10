@@ -1,0 +1,599 @@
+{
+  "date": "2025-11-08 14:59:10",
+  "data": [
+    {
+      "name": "Pro Finance-Ex",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "RaM-MaR",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Сарыарка Финанс №3",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Profit-Пайда",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "SILK WAY ВАЛЮТА АЙЫРБАСТАУ №3",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Сапа Exchange №1 (Филиал 3)",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "RaM-MaR1",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "SILK WAY ВАЛЮТА АЙЫРБАСТАУ №2",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "SAN",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Сарыарка Финанс (Торговый дом «Прага»)",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Bayliq®-EXCHANGE (Республика 23)",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Галант Финанс №1",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Сарыарка Финанс №2",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "DIPLOMAT EXCHANGE",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Exchange Market 4 (ТОО \"NurlyZhol Exchange\")",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "ТУРАН ФИНАНС",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Ecash Astana 4",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.34",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Казына",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Байлык® Финанс ТОО “Bayliq Exchange” - 1994 (Касса №3)",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Ecash Astana 1",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.34",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Центр Финанс",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Сапа Exchange №1 (Филиал 2)",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Еxchange Market 2 (магазин \"Встреча\")",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Байлык® Финанс - 1994 (головной филиал №1 ТОО «Bayliq Exchange» , ЖК \"Нурсая-2\")",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Три-А-1 №2",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Галант Финанс №2",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Exchange Market 3 (гостиница \"Корсар\")",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Ecash Astana 3",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.34",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Три-А-1 №1",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Exchange Market",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Ecash Astana 2",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.34",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Акжол Finance",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Таско",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Bayliq®-EXCHANGE",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "AZ-Валют",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Pro Finance-Ex №2",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Акжол.KZT",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Limon-NS",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.55"
+    },
+    {
+      "name": "Сапа Exchange №1 (Филиал 1)",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "НОМИНАЛ ПРО",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Алем Finance",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Nur-AkFinance",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "CASH-POINT-KZ",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Travel Exchange",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "I.P.O.",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Кайс валют",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "ТАБЫС ВАЛЮТ",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "ОТРАР FINANCE 1",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Пайда-2005 №2",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Mega exchange",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "ТАН - МАША",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.55"
+    },
+    {
+      "name": "KASSYB FINANCE №1",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "GOLD TENGE",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Байлык® (ЖК \"Ассылым\")",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Байлык® Финанс - 1994 (ТОО Bayliq Exchange) (филиал №6 , Аэропорт \"Нурсултан Назарбаев\")",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "SILK WAY ВАЛЮТА АЙЫРБАСТАУ",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Алем Exchange № 1",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "ТЕНГЕ FINANCE",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Пайда-2005 №1",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "НАУРЫЗ Exchange",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Пайда-2005 №3",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Pro Dollar 01",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Kassyb Finance №2",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.37",
+      "rub_sell": "6.52"
+    },
+    {
+      "name": "Сыганак",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.4",
+      "rub_sell": "6.55"
+    },
+    {
+      "name": "GS-EXCHANGE",
+      "usd_buy": "523",
+      "usd_sell": "530",
+      "eur_buy": "604",
+      "eur_sell": "614",
+      "rub_buy": "6.4",
+      "rub_sell": "6.55"
+    },
+    {
+      "name": "AS FINANCE",
+      "usd_buy": "524",
+      "usd_sell": "531",
+      "eur_buy": "603",
+      "eur_sell": "613",
+      "rub_buy": "6.4",
+      "rub_sell": "6.55"
+    }
+  ]
+}
