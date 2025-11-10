@@ -268,27 +268,16 @@ class ChatManager:
         # Очищаем из БД если репозиторий доступен
         if self.history_repository:
             import asyncio
-            import threading
             try:
                 # Try to get running loop
                 try:
                     loop = asyncio.get_running_loop()
-                    # If loop is running, we need to run in a thread
-                    def run_in_thread():
-                        # Create new event loop in this thread
-                        new_loop = asyncio.new_event_loop()
-                        asyncio.set_event_loop(new_loop)
-                        try:
-                            new_loop.run_until_complete(
-                                self.history_repository.clear_history(user_id, role)
-                            )
-                        finally:
-                            new_loop.close()
-                    
-                    # Run in a separate thread
-                    thread = threading.Thread(target=run_in_thread)
-                    thread.start()
-                    thread.join(timeout=5)  # Wait max 5 seconds
+                    # If loop is running, schedule coroutine in the main loop
+                    future = asyncio.run_coroutine_threadsafe(
+                        self.history_repository.clear_history(user_id, role), loop
+                    )
+                    # Wait for completion with timeout
+                    future.result(timeout=5)
                 except RuntimeError:
                     # No running loop, can use asyncio.run()
                     asyncio.run(self.history_repository.clear_history(user_id, role))
