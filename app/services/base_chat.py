@@ -2,8 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Optional
+
+import nest_asyncio
+
+# Разрешаем вложенные event loops для работы с asyncpg из синхронного контекста
+nest_asyncio.apply()
+
+from app.repositories.chat_history import ChatHistoryRepository
 
 
 class BaseChat(ABC):
@@ -16,12 +24,18 @@ class BaseChat(ABC):
         temperature: float = 0.2,
         max_output_tokens: int = 2000,
         history_file: str | None = None,
+        history_repository: Optional[ChatHistoryRepository] = None,
+        user_id: Optional[int] = None,
+        role: Optional[str] = None,
     ):
         self.system_prompt = system_prompt
         self.max_context_tokens = max_context_tokens
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
         self.history_file = history_file
+        self.history_repository = history_repository
+        self.user_id = user_id
+        self.role = role
         self.history: List[Dict[str, str]] = []
 
     @abstractmethod
@@ -74,8 +88,20 @@ class BaseChat(ABC):
     def clear_history(self):
         """Clear chat history."""
         self.history = []
-        if self.history_file:
+        if self.history_repository and self.user_id and self.role:
+            # Use async method in sync context
+            # nest_asyncio allows us to use asyncio.run() even when event loop is running
+            try:
+                asyncio.run(self._clear_history_async())
+            except Exception as e:
+                print(f"⚠️  Ошибка при очистке истории в БД: {e}")
+        elif self.history_file:
             self.save_history()
+
+    async def _clear_history_async(self):
+        """Async method to clear history from database."""
+        if self.history_repository and self.user_id and self.role:
+            await self.history_repository.clear_history(self.user_id, self.role)
 
     def get_history_summary(self) -> Dict:
         """Get information about current history."""
@@ -98,6 +124,36 @@ class BaseChat(ABC):
         }
 
     def save_history(self):
+        """Save history to database or file."""
+        if self.history_repository and self.user_id and self.role:
+            # Use async method in sync context
+            # nest_asyncio allows us to use asyncio.run() even when event loop is running
+            try:
+                asyncio.run(self._save_history_async())
+            except Exception as e:
+                print(f"⚠️  Ошибка при сохранении истории в БД: {e}")
+        elif self.history_file:
+            self._save_history_file()
+
+    async def _save_history_async(self):
+        """Save history to database."""
+        if not (self.history_repository and self.user_id and self.role):
+            return
+
+        try:
+            # Clear existing history and save all messages (history is already trimmed)
+            await self.history_repository.clear_history(self.user_id, self.role)
+            for msg in self.history:
+                await self.history_repository.add_message(
+                    self.user_id,
+                    self.role,
+                    msg.get("role", "user"),
+                    msg.get("content", ""),
+                )
+        except Exception as e:
+            print(f"⚠️  Ошибка при сохранении истории в БД: {e}")
+
+    def _save_history_file(self):
         """Save history to file in unified format."""
         if not self.history_file:
             return
@@ -108,9 +164,34 @@ class BaseChat(ABC):
             with open(self.history_file, "w", encoding="utf-8") as f:
                 json.dump(self.history, f, ensure_ascii=False, indent=2)
         except Exception as e:
-            print(f"⚠️  Ошибка при сохранении истории: {e}")
+            print(f"⚠️  Ошибка при сохранении истории в файл: {e}")
 
     def load_history(self):
+        """Load history from database or file."""
+        if self.history_repository and self.user_id and self.role:
+            # Use async method in sync context
+            # nest_asyncio allows us to use asyncio.run() even when event loop is running
+            try:
+                self.history = asyncio.run(self._load_history_async())
+            except Exception as e:
+                print(f"⚠️  Ошибка при загрузке истории из БД: {e}")
+                self.history = []
+        elif self.history_file:
+            self._load_history_file()
+
+    async def _load_history_async(self) -> List[Dict[str, str]]:
+        """Load history from database."""
+        if not (self.history_repository and self.user_id and self.role):
+            return []
+
+        try:
+            await self.history_repository.initialize()
+            return await self.history_repository.get_history(self.user_id, self.role)
+        except Exception as e:
+            print(f"⚠️  Ошибка при загрузке истории из БД: {e}")
+            return []
+
+    def _load_history_file(self):
         """Load history from file in unified format."""
         if not self.history_file:
             return
@@ -128,6 +209,6 @@ class BaseChat(ABC):
                     else:
                         self.history = []
             except Exception as e:
-                print(f"⚠️  Ошибка при загрузке истории: {e}")
+                print(f"⚠️  Ошибка при загрузке истории из файла: {e}")
                 self.history = []
 

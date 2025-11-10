@@ -15,6 +15,7 @@ from app.core.scheduler import Scheduler
 from app.data_sources.fx import FXRatesSource
 from app.data_sources.investments import InvestmentsSource
 from app.orchestrator import DigestOrchestrator
+from app.repositories.chat_history import ChatHistoryRepository
 from app.repositories.digests import DigestRepository
 from app.services.chat_manager import ChatManager
 from app.services.llm import LlmDigestService
@@ -59,8 +60,19 @@ def create_app(config: AppConfig) -> FastAPI:
 
     dependency_provider = DependencyProvider(orchestrator, repository)
 
+    # Инициализация репозитория для истории чата (PostgreSQL)
+    chat_history_repository = None
+    if config.postgres_dsn:
+        try:
+            chat_history_repository = ChatHistoryRepository(config.postgres_dsn)
+            logger.info("Chat history repository initialized with PostgreSQL")
+        except Exception as e:
+            logger.warning(f"Failed to initialize chat history repository: {e}. Will use file-based storage.")
+    else:
+        logger.warning("POSTGRES_DSN not provided, chat history will be stored in files")
+
     # Инициализация ChatManager для обработки запросов от Telegram бота
-    # Поддержка нескольких моделей с fallback: Gemini -> GPT -> Cohere
+    # Поддержка нескольких моделей с fallback: Cohere -> GPT -> Gemini
     gemini_client = None
     if config.gemini_api_key:
         gemini_client = genai.Client(api_key=config.gemini_api_key)
@@ -75,6 +87,7 @@ def create_app(config: AppConfig) -> FastAPI:
         cohere_api_key=config.cohere_api_key if config.cohere_api_key else None,
         cohere_model=config.cohere_model,
         default_role="user",
+        history_repository=chat_history_repository,
     )
 
     fastapi_app = FastAPI(title="ForteBank FX & Investments Bot")
@@ -85,6 +98,17 @@ def create_app(config: AppConfig) -> FastAPI:
     async def _start_scheduler() -> None:
         logger.info("Starting daily digest scheduler")
         await scheduler.start()
+        # Инициализируем репозиторий истории чата при старте
+        if chat_history_repository:
+            await chat_history_repository.initialize()
+            logger.info("Chat history repository initialized")
+
+    @fastapi_app.on_event("shutdown")
+    async def _shutdown() -> None:
+        """Закрываем соединения с БД при остановке."""
+        if chat_history_repository:
+            await chat_history_repository.close()
+            logger.info("Chat history repository closed")
 
     fastapi_app.state.config = config
     fastapi_app.state.scheduler = scheduler

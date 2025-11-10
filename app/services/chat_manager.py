@@ -7,6 +7,7 @@ from typing import Dict, Optional
 
 from google import genai
 
+from app.repositories.chat_history import ChatHistoryRepository
 from app.services.cohere_chat import CohereChat
 from app.services.gemini_chat import GeminiChat
 from app.services.gpt_chat import GPTChat
@@ -27,6 +28,7 @@ class ChatManager:
         cohere_api_key: Optional[str] = None,
         cohere_model: str = "command-r-08-2024",
         default_role: str = "user",
+        history_repository: Optional[ChatHistoryRepository] = None,
     ):
         self.gemini_client = gemini_client
         self.gemini_model = gemini_model
@@ -35,6 +37,7 @@ class ChatManager:
         self.cohere_api_key = cohere_api_key
         self.cohere_model = cohere_model
         self.default_role = default_role
+        self.history_repository = history_repository
 
         # Хранилище чатов для каждого пользователя и роли
         # Структура: {user_id: {role: BaseChat}}
@@ -48,7 +51,7 @@ class ChatManager:
         self.fallback_order = ["cohere", "gpt", "gemini"]
 
     def _create_chat_instance(
-        self, model_type: str, user_id: int, role: str, history_file: str
+        self, model_type: str, user_id: int, role: str, history_file: Optional[str] = None
     ) -> any:
         """Создать экземпляр чата для указанной модели."""
         system_prompt = get_role_prompt(role)
@@ -57,8 +60,15 @@ class ChatManager:
             "max_context_tokens": 30000,
             "temperature": 0.2,
             "max_output_tokens": 2000,
-            "history_file": history_file,
+            "user_id": user_id,
+            "role": role,
         }
+        
+        # Используем БД если репозиторий доступен, иначе файлы
+        if self.history_repository:
+            common_params["history_repository"] = self.history_repository
+        else:
+            common_params["history_file"] = history_file or f"chat_history_{user_id}_{role}.json"
 
         if model_type == "gemini":
             if not self.gemini_client:
@@ -100,8 +110,8 @@ class ChatManager:
 
         if role not in self.user_chats[user_id]:
             # Создаем новый чат для пользователя с указанной ролью
-            # Используем единый файл истории для всех моделей
-            history_file = f"chat_history_{user_id}_{role}.json"
+            # Используем БД если репозиторий доступен, иначе файлы
+            history_file = None if self.history_repository else f"chat_history_{user_id}_{role}.json"
             
             # Пытаемся создать чат с первой доступной моделью
             chat = None
@@ -109,6 +119,8 @@ class ChatManager:
                 try:
                     chat = self._create_chat_instance(model_type, user_id, role, history_file)
                     logger.info(f"Created {model_type} chat for user {user_id}, role {role}")
+                    # Загружаем историю после создания
+                    chat.load_history()
                     break
                 except (ValueError, Exception) as e:
                     logger.warning(f"Failed to create {model_type} chat: {e}")
@@ -128,7 +140,7 @@ class ChatManager:
         Returns:
             tuple: (response_text, used_model)
         """
-        history_file = f"chat_history_{user_id}_{role}.json"
+        history_file = None if self.history_repository else f"chat_history_{user_id}_{role}.json"
         system_prompt = get_role_prompt(role)
 
         last_error = None
@@ -199,7 +211,7 @@ class ChatManager:
         if provider:
             # Используем указанный провайдер
             logger.info(f"Using provider {provider} for user {user_id}, role {used_role}")
-            history_file = f"chat_history_{user_id}_{used_role}.json"
+            history_file = None if self.history_repository else f"chat_history_{user_id}_{used_role}.json"
             try:
                 chat = self._create_chat_instance(provider, user_id, used_role, history_file)
                 chat.load_history()
@@ -253,8 +265,20 @@ class ChatManager:
         Returns:
             bool: Успешность операции
         """
+        # Очищаем из БД если репозиторий доступен
+        if self.history_repository:
+            import asyncio
+            import nest_asyncio
+            nest_asyncio.apply()
+            try:
+                asyncio.run(self.history_repository.clear_history(user_id, role))
+            except Exception as e:
+                logger.error(f"Error clearing history from DB: {e}")
+                return False
+
+        # Очищаем из памяти
         if user_id not in self.user_chats:
-            return False
+            return True
 
         if role:
             # Очищаем конкретную роль

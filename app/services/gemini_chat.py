@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from google import genai
 
+from app.repositories.chat_history import ChatHistoryRepository
 from app.services.base_chat import BaseChat
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,9 @@ class GeminiChat(BaseChat):
         temperature: float = 0.2,
         max_output_tokens: int = 2000,
         history_file: str | None = None,
+        history_repository: Optional[ChatHistoryRepository] = None,
+        user_id: Optional[int] = None,
+        role: Optional[str] = None,
     ):
         super().__init__(
             system_prompt=system_prompt,
@@ -31,6 +35,9 @@ class GeminiChat(BaseChat):
             temperature=temperature,
             max_output_tokens=max_output_tokens,
             history_file=history_file,
+            history_repository=history_repository,
+            user_id=user_id,
+            role=role,
         )
         self.client = client
         self.model = model
@@ -74,7 +81,7 @@ class GeminiChat(BaseChat):
         # Add user message to history
         self.add_message("user", user_message)
 
-        # Trim history if needed
+        # Trim history if needed (both in memory and will be saved to DB)
         self._trim_history()
 
         # Convert to Gemini format
@@ -129,6 +136,9 @@ class GeminiChat(BaseChat):
 
         # Add assistant response to history
         self.add_message("model", assistant_message)
+        # Trim again after adding response
+        self._trim_history()
+        # Save to DB (trimmed history)
         self.save_history()
         return assistant_message
 
