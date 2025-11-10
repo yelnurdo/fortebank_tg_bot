@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-import json
-import os
+import logging
 from typing import Dict, List
 
 from google import genai
 
+from app.services.base_chat import BaseChat
 
-class GeminiChat:
+logger = logging.getLogger(__name__)
+
+
+class GeminiChat(BaseChat):
     """Класс для управления чатом с Gemini API с сохранением истории."""
 
     def __init__(
@@ -22,82 +25,66 @@ class GeminiChat:
         max_output_tokens: int = 2000,
         history_file: str | None = None,
     ):
+        super().__init__(
+            system_prompt=system_prompt,
+            max_context_tokens=max_context_tokens,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+            history_file=history_file,
+        )
         self.client = client
         self.model = model
-        self.system_prompt = system_prompt
-        self.max_context_tokens = max_context_tokens
-        self.temperature = temperature
-        self.max_output_tokens = max_output_tokens
-        self.history: List[Dict[str, str]] = []
-        self.history_file = history_file
+        # Load history after initialization
+        self.load_history()
 
-    def add_message(self, role: str, content: str):
-        """Добавить сообщение в историю."""
-        self.history.append({"role": role, "parts": [{"text": content}]})
+    def _convert_to_model_format(self, history: List[Dict[str, str]]) -> List[Dict]:
+        """Convert unified history format to Gemini format."""
+        # Gemini format: [{"role": "user", "parts": [{"text": "..."}]}, ...]
+        contents = []
+        for msg in history:
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+            # Map "model" to "model" for Gemini
+            if role not in ["user", "model"]:
+                role = "user"
+            contents.append({"role": role, "parts": [{"text": content}]})
+        return contents
 
-    def _estimate_tokens(self, text: str) -> int:
-        """Примерная оценка токенов (1 токен ≈ 4 символа для русского/английского)."""
-        if text is None:
-            return 0
-        return len(str(text)) // 4
+    def _convert_from_model_format(self, model_history: any) -> List[Dict[str, str]]:
+        """Convert Gemini format to unified history format."""
+        # Convert from old Gemini format if needed
+        unified = []
+        for msg in model_history:
+            if isinstance(msg, dict):
+                if "parts" in msg:
+                    # Old Gemini format
+                    content = msg.get("parts", [{}])[0].get("text", "")
+                else:
+                    # Already unified format
+                    content = msg.get("content", "")
+                role = msg.get("role", "user")
+                if role == "model":
+                    role = "model"
+                unified.append({"role": role, "content": content})
+        return unified
 
-    def _trim_history(self):
-        """Обрезать историю, если она превышает лимит контекста."""
-        if not self.history:
-            return
-
-        # Подсчитываем токены в системном промпте
-        system_tokens = self._estimate_tokens(self.system_prompt)
-
-        # Подсчитываем токены в истории
-        history_tokens = sum(
-            self._estimate_tokens(msg.get("parts", [{}])[0].get("text")) for msg in self.history
-        )
-
-        total_tokens = system_tokens + history_tokens
-
-        # Если превышаем лимит, удаляем самые старые сообщения
-        # Оставляем минимум последнее сообщение
-        while total_tokens > self.max_context_tokens and len(self.history) > 1:
-            # Удаляем самое старое сообщение
-            removed = self.history.pop(0)
-            removed_tokens = self._estimate_tokens(removed.get("parts", [{}])[0].get("text"))
-            total_tokens -= removed_tokens
 
     def send_message(self, user_message: str) -> str:
         """Отправить сообщение и получить ответ."""
-        # Добавляем сообщение пользователя в историю
+        # Add user message to history
         self.add_message("user", user_message)
 
-        # Обрезаем историю при необходимости
+        # Trim history if needed
         self._trim_history()
 
-        # Формируем конфигурацию
+        # Convert to Gemini format
+        contents = self._convert_to_model_format(self.history)
+
+        # Form configuration
         config = {
             "temperature": self.temperature,
             "max_output_tokens": self.max_output_tokens,
         }
-
-        # Валидируем историю перед отправкой
-        self._clean_history()
-        
-        # Создаем копию истории с правильной структурой
-        contents = []
-        for msg in self.history:
-            if self._validate_message(msg):
-                # Создаем правильную структуру для Gemini API
-                validated_msg = {
-                    "role": msg["role"],
-                    "parts": []
-                }
-                for part in msg["parts"]:
-                    if isinstance(part, dict):
-                        if "text" in part and part["text"] is not None:
-                            validated_msg["parts"].append({"text": str(part["text"])})
-                        elif "data" in part:
-                            validated_msg["parts"].append({"data": part["data"]})
-                if validated_msg["parts"]:
-                    contents.append(validated_msg)
 
         # Отправляем запрос с системным промптом и историей
         # Пробуем разные варианты передачи system_instruction
@@ -135,95 +122,31 @@ class GeminiChat:
                     config=config,
                 )
 
-        # Получаем ответ
+        # Get response
         assistant_message = response.text
         if assistant_message is None:
             assistant_message = "Извините, не удалось получить ответ от модели."
 
-        # Добавляем ответ ассистента в историю
+        # Add assistant response to history
         self.add_message("model", assistant_message)
         self.save_history()
         return assistant_message
 
-    def clear_history(self):
-        """Очистить историю чата."""
-        self.history = []
-        if self.history_file:
-            self.save_history()
+    def get_model_name(self) -> str:
+        """Get the name of the model provider."""
+        return "gemini"
 
-    def get_history_summary(self) -> Dict:
-        """Получить информацию о текущей истории."""
-        total_messages = len(self.history)
-        system_tokens = self._estimate_tokens(self.system_prompt)
-        history_tokens = sum(
-            self._estimate_tokens(msg.get("parts", [{}])[0].get("text")) for msg in self.history
-        )
-
-        return {
-            "total_messages": total_messages,
-            "system_tokens": system_tokens,
-            "history_tokens": history_tokens,
-            "total_tokens": system_tokens + history_tokens,
-            "max_context_tokens": self.max_context_tokens,
-            "usage_percent": round(
-                (system_tokens + history_tokens) / self.max_context_tokens * 100, 2
-            ),
-        }
-
-    def save_history(self):
-        """Сохранить историю в файл."""
-        if not self.history_file:
-            return
-
-        try:
-            with open(self.history_file, "w", encoding="utf-8") as f:
-                json.dump(self.history, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"⚠️  Ошибка при сохранении истории: {e}")
-
-    def _validate_message(self, msg: dict) -> bool:
-        """Проверить и исправить структуру сообщения."""
-        if not isinstance(msg, dict):
-            return False
-        
-        if "role" not in msg:
-            return False
-        
-        if "parts" not in msg or not isinstance(msg["parts"], list) or len(msg["parts"]) == 0:
-            return False
-        
-        # Проверяем, что в parts есть text
-        part = msg["parts"][0]
-        if not isinstance(part, dict):
-            return False
-        
-        # Должно быть либо text, либо data, но не оба
-        if "text" not in part and "data" not in part:
-            return False
-        
-        # Если text есть, но он None или пустой, исправляем
-        if "text" in part:
-            if part["text"] is None:
-                part["text"] = ""
-        
-        return True
-    
-    def _clean_history(self):
-        """Очистить историю от некорректных сообщений."""
-        self.history = [msg for msg in self.history if self._validate_message(msg)]
-    
     def load_history(self):
-        """Загрузить историю из файла (если есть)."""
-        if not self.history_file:
-            return
-
-        if os.path.exists(self.history_file):
-            try:
-                with open(self.history_file, "r", encoding="utf-8") as f:
-                    self.history = json.load(f)
-                    # Валидируем и очищаем историю
-                    self._clean_history()
-            except Exception as e:
-                print(f"⚠️  Ошибка при загрузке истории: {e}")
-                self.history = []
+        """Load history from file and convert to unified format if needed."""
+        super().load_history()
+        # Convert old Gemini format to unified format if needed
+        if (
+            self.history
+            and len(self.history) > 0
+            and isinstance(self.history[0], dict)
+            and "parts" in self.history[0]
+        ):
+            # Old format detected, convert it
+            self.history = self._convert_from_model_format(self.history)
+            self.save_history()  # Save in new format
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -13,6 +15,10 @@ class ChatRequest(BaseModel):
     role: str = Field(
         default="user",
         description="Роль пользователя: user, employee, investor",
+    )
+    provider: Optional[str] = Field(
+        default=None,
+        description="Провайдер модели: gemini, gpt (или openai), cohere. Если не указан, используется автоматический fallback",
     )
 
 

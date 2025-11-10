@@ -31,10 +31,20 @@ def create_chat_router(chat_manager: ChatManager) -> APIRouter:
         получает ответ от Gemini модели и отправляет его обратно пользователю.
         """
         try:
+            logger.info(
+                f"Processing message for user {request.user_id}, "
+                f"role={request.role}, provider={request.provider or 'auto'}"
+            )
             response_text, used_role, stats = chat_manager.process_message(
                 user_id=request.user_id,
                 message=request.message,
                 role=request.role,
+                provider=request.provider,
+            )
+
+            logger.info(
+                f"Message processed successfully for user {request.user_id}, "
+                f"model={stats.get('model', 'unknown')}"
             )
 
             return ChatResponse(
@@ -43,7 +53,7 @@ def create_chat_router(chat_manager: ChatManager) -> APIRouter:
                 stats=stats,
             )
         except Exception as e:
-            logger.exception(f"Ошибка при обработке сообщения: {e}")
+            logger.exception(f"Ошибка при обработке сообщения для user {request.user_id}: {e}")
             raise HTTPException(
                 status_code=500,
                 detail=f"Ошибка при обработке сообщения: {str(e)}",

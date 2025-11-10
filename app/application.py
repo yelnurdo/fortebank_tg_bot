@@ -60,16 +60,20 @@ def create_app(config: AppConfig) -> FastAPI:
     dependency_provider = DependencyProvider(orchestrator, repository)
 
     # Инициализация ChatManager для обработки запросов от Telegram бота
-    if not config.gemini_api_key:
-        raise ValueError(
-            "GEMINI_API_KEY environment variable is missing. "
-            "Please create a .env file with GEMINI_API_KEY=your_key"
-        )
+    # Поддержка нескольких моделей с fallback: Gemini -> GPT -> Cohere
+    gemini_client = None
+    if config.gemini_api_key:
+        gemini_client = genai.Client(api_key=config.gemini_api_key)
+    else:
+        logger.warning("GEMINI_API_KEY not provided, Gemini will not be available")
 
-    gemini_client = genai.Client(api_key=config.gemini_api_key)
     chat_manager = ChatManager(
         gemini_client=gemini_client,
-        model=config.gemini_model,
+        gemini_model=config.gemini_model,
+        openai_api_key=config.openai_api_key if config.openai_api_key else None,
+        gpt_model=config.gpt_model,
+        cohere_api_key=config.cohere_api_key if config.cohere_api_key else None,
+        cohere_model=config.cohere_model,
         default_role="user",
     )
 
