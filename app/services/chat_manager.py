@@ -268,10 +268,30 @@ class ChatManager:
         # Очищаем из БД если репозиторий доступен
         if self.history_repository:
             import asyncio
-            import nest_asyncio
-            nest_asyncio.apply()
+            import threading
             try:
-                asyncio.run(self.history_repository.clear_history(user_id, role))
+                # Try to get running loop
+                try:
+                    loop = asyncio.get_running_loop()
+                    # If loop is running, we need to run in a thread
+                    def run_in_thread():
+                        # Create new event loop in this thread
+                        new_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(new_loop)
+                        try:
+                            new_loop.run_until_complete(
+                                self.history_repository.clear_history(user_id, role)
+                            )
+                        finally:
+                            new_loop.close()
+                    
+                    # Run in a separate thread
+                    thread = threading.Thread(target=run_in_thread)
+                    thread.start()
+                    thread.join(timeout=5)  # Wait max 5 seconds
+                except RuntimeError:
+                    # No running loop, can use asyncio.run()
+                    asyncio.run(self.history_repository.clear_history(user_id, role))
             except Exception as e:
                 logger.error(f"Error clearing history from DB: {e}")
                 return False

@@ -6,11 +6,6 @@ import asyncio
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
 
-import nest_asyncio
-
-# Разрешаем вложенные event loops для работы с asyncpg из синхронного контекста
-nest_asyncio.apply()
-
 from app.repositories.chat_history import ChatHistoryRepository
 
 
@@ -90,9 +85,29 @@ class BaseChat(ABC):
         self.history = []
         if self.history_repository and self.user_id and self.role:
             # Use async method in sync context
-            # nest_asyncio allows us to use asyncio.run() even when event loop is running
             try:
-                asyncio.run(self._clear_history_async())
+                # Try to get running loop
+                try:
+                    loop = asyncio.get_running_loop()
+                    # If loop is running, we need to run in a thread
+                    import threading
+                    
+                    def run_in_thread():
+                        # Create new event loop in this thread
+                        new_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(new_loop)
+                        try:
+                            new_loop.run_until_complete(self._clear_history_async())
+                        finally:
+                            new_loop.close()
+                    
+                    # Run in a separate thread
+                    thread = threading.Thread(target=run_in_thread)
+                    thread.start()
+                    thread.join(timeout=5)  # Wait max 5 seconds
+                except RuntimeError:
+                    # No running loop, can use asyncio.run()
+                    asyncio.run(self._clear_history_async())
             except Exception as e:
                 print(f"⚠️  Ошибка при очистке истории в БД: {e}")
         elif self.history_file:
@@ -127,9 +142,30 @@ class BaseChat(ABC):
         """Save history to database or file."""
         if self.history_repository and self.user_id and self.role:
             # Use async method in sync context
-            # nest_asyncio allows us to use asyncio.run() even when event loop is running
             try:
-                asyncio.run(self._save_history_async())
+                # Try to get running loop
+                try:
+                    loop = asyncio.get_running_loop()
+                    # If loop is running, we need to run in a thread
+                    import concurrent.futures
+                    import threading
+                    
+                    def run_in_thread():
+                        # Create new event loop in this thread
+                        new_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(new_loop)
+                        try:
+                            new_loop.run_until_complete(self._save_history_async())
+                        finally:
+                            new_loop.close()
+                    
+                    # Run in a separate thread
+                    thread = threading.Thread(target=run_in_thread)
+                    thread.start()
+                    thread.join(timeout=5)  # Wait max 5 seconds
+                except RuntimeError:
+                    # No running loop, can use asyncio.run()
+                    asyncio.run(self._save_history_async())
             except Exception as e:
                 print(f"⚠️  Ошибка при сохранении истории в БД: {e}")
         elif self.history_file:
@@ -170,9 +206,34 @@ class BaseChat(ABC):
         """Load history from database or file."""
         if self.history_repository and self.user_id and self.role:
             # Use async method in sync context
-            # nest_asyncio allows us to use asyncio.run() even when event loop is running
             try:
-                self.history = asyncio.run(self._load_history_async())
+                # Try to get running loop
+                try:
+                    loop = asyncio.get_running_loop()
+                    # If loop is running, we need to run in a thread
+                    import concurrent.futures
+                    import threading
+                    
+                    result = []
+                    
+                    def run_in_thread():
+                        # Create new event loop in this thread
+                        new_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(new_loop)
+                        try:
+                            nonlocal result
+                            result = new_loop.run_until_complete(self._load_history_async())
+                        finally:
+                            new_loop.close()
+                    
+                    # Run in a separate thread
+                    thread = threading.Thread(target=run_in_thread)
+                    thread.start()
+                    thread.join(timeout=5)  # Wait max 5 seconds
+                    self.history = result
+                except RuntimeError:
+                    # No running loop, can use asyncio.run()
+                    self.history = asyncio.run(self._load_history_async())
             except Exception as e:
                 print(f"⚠️  Ошибка при загрузке истории из БД: {e}")
                 self.history = []
