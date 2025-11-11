@@ -56,6 +56,10 @@ class BaseChat(ABC):
     def add_message(self, role: str, content: str):
         """Add a message to history in unified format."""
         self.history.append({"role": role, "content": content})
+    
+    def update_system_prompt(self, new_prompt: str):
+        """Обновить системный промпт."""
+        self.system_prompt = new_prompt
 
     def _estimate_tokens(self, text: str) -> int:
         """Estimate tokens (1 token ≈ 4 characters for Russian/English)."""

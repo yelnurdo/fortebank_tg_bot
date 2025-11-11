@@ -78,6 +78,12 @@ class GeminiChat(BaseChat):
 
     def send_message(self, user_message: str) -> str:
         """Отправить сообщение и получить ответ."""
+        # Обновляем системный промпт на основе текущего сообщения
+        from app.services.roles import get_role_prompt
+        if self.role:
+            new_prompt = get_role_prompt(self.role, user_message)
+            self.update_system_prompt(new_prompt)
+        
         # Add user message to history
         self.add_message("user", user_message)
 

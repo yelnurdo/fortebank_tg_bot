@@ -51,10 +51,10 @@ class ChatManager:
         self.fallback_order = ["cohere", "gpt", "gemini"]
 
     def _create_chat_instance(
-        self, model_type: str, user_id: int, role: str, history_file: Optional[str] = None
+        self, model_type: str, user_id: int, role: str, history_file: Optional[str] = None, message: str = ""
     ) -> any:
         """Создать экземпляр чата для указанной модели."""
-        system_prompt = get_role_prompt(role)
+        system_prompt = get_role_prompt(role, message)
         common_params = {
             "system_prompt": system_prompt,
             "max_context_tokens": 30000,
@@ -97,7 +97,7 @@ class ChatManager:
         else:
             raise ValueError(f"Unknown model type: {model_type}")
 
-    def get_chat(self, user_id: int, role: str = None) -> any:
+    def get_chat(self, user_id: int, role: str = None, message: str = "") -> any:
         """Получить или создать чат для пользователя с указанной ролью."""
         if role is None:
             role = self.user_roles.get(user_id, self.default_role)
@@ -108,16 +108,18 @@ class ChatManager:
         if user_id not in self.user_chats:
             self.user_chats[user_id] = {}
 
+        # Используем только роль как ключ (история общая для всех типов запросов)
         if role not in self.user_chats[user_id]:
             # Создаем новый чат для пользователя с указанной ролью
             # Используем БД если репозиторий доступен, иначе файлы
             history_file = None if self.history_repository else f"chat_history_{user_id}_{role}.json"
             
             # Пытаемся создать чат с первой доступной моделью
+            # Используем пустое сообщение для базового промпта
             chat = None
             for model_type in self.fallback_order:
                 try:
-                    chat = self._create_chat_instance(model_type, user_id, role, history_file)
+                    chat = self._create_chat_instance(model_type, user_id, role, history_file, "")
                     logger.info(f"Created {model_type} chat for user {user_id}, role {role}")
                     # Загружаем историю после создания
                     chat.load_history()
@@ -141,13 +143,13 @@ class ChatManager:
             tuple: (response_text, used_model)
         """
         history_file = None if self.history_repository else f"chat_history_{user_id}_{role}.json"
-        system_prompt = get_role_prompt(role)
+        system_prompt = get_role_prompt(role, message)
 
         last_error = None
         for model_type in self.fallback_order:
             try:
                 # Создаем временный экземпляр чата для этой модели
-                chat = self._create_chat_instance(model_type, user_id, role, history_file)
+                chat = self._create_chat_instance(model_type, user_id, role, history_file, message)
                 
                 # Загружаем общую историю
                 chat.load_history()
@@ -213,7 +215,7 @@ class ChatManager:
             logger.info(f"Using provider {provider} for user {user_id}, role {used_role}")
             history_file = None if self.history_repository else f"chat_history_{user_id}_{used_role}.json"
             try:
-                chat = self._create_chat_instance(provider, user_id, used_role, history_file)
+                chat = self._create_chat_instance(provider, user_id, used_role, history_file, message)
                 chat.load_history()
                 response = chat.send_message(message)
                 stats = chat.get_history_summary()
@@ -234,7 +236,7 @@ class ChatManager:
         # Автоматический выбор провайдера (fallback стратегия)
         # Пытаемся использовать существующий чат, если он есть
         try:
-            chat = self.get_chat(user_id, used_role)
+            chat = self.get_chat(user_id, used_role, message)
             model_name = chat.get_model_name()
             logger.info(f"Using existing {model_name} chat for user {user_id}, role {used_role}")
             response = chat.send_message(message)
@@ -246,7 +248,7 @@ class ChatManager:
             # Если текущий чат не работает, пробуем fallback
             try:
                 response, used_model = self._try_with_fallback(user_id, used_role, message)
-                chat = self.get_chat(user_id, used_role)
+                chat = self.get_chat(user_id, used_role, message)
                 stats = chat.get_history_summary()
                 logger.info(f"Successfully processed message with {used_model} (fallback) for user {user_id}")
                 return response, used_role, stats
