@@ -75,10 +75,11 @@ class ChatHistoryRepository:
     async def _create_tables(self) -> None:
         """Create chat_history table if it doesn't exist."""
         async with self._pool.acquire() as conn:
+            # Сначала создаем таблицу если её нет
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS chat_history (
                     id SERIAL PRIMARY KEY,
-                    user_id INTEGER NOT NULL,
+                    user_id BIGINT NOT NULL,
                     role VARCHAR(50) NOT NULL DEFAULT 'user',
                     message_role VARCHAR(50) NOT NULL,
                     message_content TEXT NOT NULL,
@@ -92,6 +93,7 @@ class ChatHistoryRepository:
                 CREATE INDEX IF NOT EXISTS idx_chat_history_created_at 
                 ON chat_history(created_at);
             """)
+            
             logger.info("Chat history table created/verified")
 
     async def get_history(

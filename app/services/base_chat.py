@@ -87,7 +87,8 @@ class BaseChat(ABC):
     def clear_history(self):
         """Clear chat history."""
         self.history = []
-        if self.history_repository and self.user_id and self.role:
+        # Проверяем user_id is not None (0 - валидное значение для user_id)
+        if self.history_repository and self.user_id is not None and self.role:
             # Use async method in sync context
             try:
                 # Try to get running loop
@@ -109,7 +110,8 @@ class BaseChat(ABC):
 
     async def _clear_history_async(self):
         """Async method to clear history from database."""
-        if self.history_repository and self.user_id and self.role:
+        # Проверяем user_id is not None (0 - валидное значение для user_id)
+        if self.history_repository and self.user_id is not None and self.role:
             await self.history_repository.clear_history(self.user_id, self.role)
 
     def get_history_summary(self) -> Dict:
@@ -136,7 +138,8 @@ class BaseChat(ABC):
         """Save history to database or file."""
         print(f"🔍 save_history вызван: repository={self.history_repository is not None}, user_id={self.user_id}, role={self.role}, history_len={len(self.history)}")
         
-        if self.history_repository and self.user_id and self.role:
+        # Проверяем user_id is not None (0 - валидное значение для user_id)
+        if self.history_repository and self.user_id is not None and self.role:
             # Use async method in sync context
             try:
                 # Try to get running loop
@@ -190,7 +193,8 @@ class BaseChat(ABC):
 
     async def _save_history_async(self):
         """Save history to database."""
-        if not (self.history_repository and self.user_id and self.role):
+        # Проверяем user_id is not None (0 - валидное значение для user_id)
+        if not (self.history_repository and self.user_id is not None and self.role):
             print(f"⚠️  Не могу сохранить: repository={self.history_repository is not None}, user_id={self.user_id}, role={self.role}")
             return
 
@@ -235,7 +239,8 @@ class BaseChat(ABC):
 
     def load_history(self):
         """Load history from database or file."""
-        if self.history_repository and self.user_id and self.role:
+        # Проверяем user_id is not None (0 - валидное значение для user_id)
+        if self.history_repository and self.user_id is not None and self.role:
             # Use async method in sync context
             try:
                 # Try to get running loop
@@ -281,7 +286,8 @@ class BaseChat(ABC):
 
     async def _load_history_async(self) -> List[Dict[str, str]]:
         """Load history from database."""
-        if not (self.history_repository and self.user_id and self.role):
+        # Проверяем user_id is not None (0 - валидное значение для user_id)
+        if not (self.history_repository and self.user_id is not None and self.role):
             print(f"⚠️  Не могу загрузить: repository={self.history_repository is not None}, user_id={self.user_id}, role={self.role}")
             return []
 
