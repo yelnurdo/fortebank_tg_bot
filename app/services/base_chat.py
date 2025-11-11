@@ -191,10 +191,9 @@ class BaseChat(ABC):
             return
 
         try:
-            # Create a new connection pool for this event loop if needed
+            # Always reinitialize to ensure we have a pool for the current event loop
             # This is necessary when running in a separate thread with new event loop
-            if self.history_repository._pool is None:
-                await self.history_repository.initialize()
+            await self.history_repository.initialize()
             
             print(f"💾 Сохранение истории: user_id={self.user_id}, role={self.role}, messages={len(self.history)}")
             
@@ -283,10 +282,9 @@ class BaseChat(ABC):
             return []
 
         try:
-            # Create a new connection pool for this event loop if needed
+            # Always reinitialize to ensure we have a pool for the current event loop
             # This is necessary when running in a separate thread with new event loop
-            if self.history_repository._pool is None:
-                await self.history_repository.initialize()
+            await self.history_repository.initialize()
             
             print(f"📖 Загрузка истории: user_id={self.user_id}, role={self.role}")
             history = await self.history_repository.get_history(self.user_id, self.role)

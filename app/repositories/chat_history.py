@@ -28,8 +28,18 @@ class ChatHistoryRepository:
             
             # Check if we already have a pool for this loop
             if loop_id in self._pools_by_loop:
-                self._pool = self._pools_by_loop[loop_id]
-                return
+                existing_pool = self._pools_by_loop[loop_id]
+                # Check if pool is still valid (not closed)
+                try:
+                    # Try to get a connection to verify pool is still valid
+                    async with existing_pool.acquire() as conn:
+                        await conn.fetchval("SELECT 1")
+                    self._pool = existing_pool
+                    return
+                except Exception:
+                    # Pool is invalid, remove it and create new one
+                    if loop_id in self._pools_by_loop:
+                        del self._pools_by_loop[loop_id]
             
             # Create new pool for this loop
             self._pool = await asyncpg.create_pool(
@@ -42,13 +52,18 @@ class ChatHistoryRepository:
             await self._create_tables()
         except RuntimeError:
             # No running loop, create pool anyway
-            if self._pool is None:
+            # Use a unique key for pools without loop
+            loop_id = "no_loop"
+            if loop_id in self._pools_by_loop:
+                self._pool = self._pools_by_loop[loop_id]
+            else:
                 self._pool = await asyncpg.create_pool(
                     self._dsn,
                     min_size=1,
                     max_size=10,
                     command_timeout=60,
                 )
+                self._pools_by_loop[loop_id] = self._pool
                 await self._create_tables()
 
     async def close(self) -> None:
